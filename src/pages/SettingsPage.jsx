@@ -45,7 +45,7 @@ export default function SettingsPage() {
         {/* Financial Preferences Card */}
         <div style={styles.card}>
           <h3 style={styles.sectionHeading}>Financial Preferences</h3>
-          
+
           <div style={styles.infoRow}>
             <div style={styles.iconKey}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted-cream)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -91,12 +91,12 @@ export default function SettingsPage() {
 
           <div style={styles.infoRow}>
             <span style={styles.infoKey}>Application</span>
-            <span style={styles.infoValue}>Khatascan Fintech Suite</span>
+            <span style={styles.infoValue}>Khatascan</span>
           </div>
 
           <div style={styles.infoRow}>
             <span style={styles.infoKey}>Build Version</span>
-            <span style={styles.infoValue}>1.0 (Production)</span>
+            <span style={styles.infoValue}>1.0</span>
           </div>
 
           <div style={styles.infoRow}>

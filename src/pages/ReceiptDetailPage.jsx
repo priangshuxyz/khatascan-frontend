@@ -119,20 +119,6 @@ export default function ReceiptDetailPage() {
             </div>
           </div>
 
-          {/* Receipt Image (if present) */}
-          {receipt.image_url && (
-            <div style={styles.card}>
-              <h4 style={styles.sectionHeading}>Receipt Photo</h4>
-              <div style={styles.imageWrapper}>
-                <img
-                  src={`${apiBase}${receipt.image_url}`}
-                  alt="Receipt"
-                  style={styles.fullImage}
-                />
-              </div>
-            </div>
-          )}
-
           {/* Line Items Breakdown Table */}
           {receipt.items && receipt.items.length > 0 && (
             <div style={styles.card}>
@@ -165,25 +151,6 @@ export default function ReceiptDetailPage() {
             </div>
           )}
 
-          {/* Raw OCR Text Section */}
-          {receipt.raw_ocr_text && (
-            <div style={styles.card}>
-              <div
-                style={styles.collapsibleHeader}
-                onClick={() => setShowRawOcr(!showRawOcr)}
-                role="button"
-                tabIndex={0}
-              >
-                <h4 style={{ ...styles.sectionHeading, marginBottom: 0 }}>Raw OCR Extraction</h4>
-                <span style={styles.toggleLink}>
-                  {showRawOcr ? 'Hide' : 'View Text'}
-                </span>
-              </div>
-              {showRawOcr && (
-                <pre style={styles.rawText}>{receipt.raw_ocr_text}</pre>
-              )}
-            </div>
-          )}
         </div>
       ) : null}
     </div>

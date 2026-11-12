@@ -53,15 +53,17 @@ export default function AnalyticsPage() {
         if (catRes.status === 'fulfilled' && Array.isArray(catRes.value) && catRes.value.length > 0) {
           setCategories(catRes.value)
         } else {
-          setCategories(FALLBACK_CATEGORIES)
+          setCategories([])
         }
       })
       .finally(() => setLoading(false))
   }, [])
 
-  const totalSpent = summary?.total_spent && summary.total_spent > 0 ? summary.total_spent : 12450
-  const receiptCount = summary?.receipt_count && summary.receipt_count > 0 ? summary.receipt_count : 20
-  const avgPerReceipt = summary?.avg_per_receipt && summary.avg_per_receipt > 0 ? summary.avg_per_receipt : Math.round(totalSpent / receiptCount)
+  const totalSpent = Number(summary?.total_spent ?? 0)
+  const receiptCount = Number(summary?.receipt_count ?? 0)
+  const avgPerReceipt = Number(
+    summary?.avg_per_receipt ?? (receiptCount ? totalSpent / receiptCount : 0)
+  )
   const dailyAverage = Math.round(totalSpent / daysPassed)
 
   // Find top category
@@ -110,19 +112,20 @@ export default function AnalyticsPage() {
           {/* Quick Insights Banner */}
           <div style={styles.insightCard}>
             <div style={styles.insightIconCircle}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-dark)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--accent-dark)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
             </div>
             <div style={styles.insightTextGroup}>
-              <span style={styles.insightHeading}>Daily Pace: {formatINR(dailyAverage)} / day</span>
-              <span style={styles.insightDetail}>
-                {topCategory
-                  ? `${topCategory.category} represents your largest expense at ${Math.round(topCategory.percentage)}% of total.`
-                  : 'Track and balance your daily expenses consistently.'}
-              </span>
+              <span style={styles.insightHeading}>...</span>
+              <span style={styles.insightDetail}>...</span>
             </div>
           </div>
 

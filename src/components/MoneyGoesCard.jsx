@@ -9,13 +9,6 @@ const CATEGORY_CONFIG = {
   Other: { color: '#9BB5A8', label: 'Others' },
 }
 
-const DEFAULT_CATEGORIES = [
-  { category: 'Groceries', total: 4320, percentage: 35 },
-  { category: 'Restaurant', total: 2240, percentage: 18 },
-  { category: 'Utilities', total: 1870, percentage: 15 },
-  { category: 'Transport', total: 1490, percentage: 12 },
-  { category: 'Others', total: 2530, percentage: 20 },
-]
 
 function formatINR(val) {
   if (val === null || val === undefined) return '₹ 0'
@@ -69,7 +62,7 @@ function DoughnutChart({ data, total }) {
 }
 
 export default function MoneyGoesCard({ data, loading = false }) {
-  const categories = (data && data.length > 0) ? data : DEFAULT_CATEGORIES
+  const categories = Array.isArray(data) ? data : []
   const totalSpend = categories.reduce((sum, item) => sum + (item.total || 0), 0)
 
   return (

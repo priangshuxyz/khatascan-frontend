@@ -33,8 +33,14 @@ export default function Home() {
         if (summaryRes.status === 'fulfilled' && summaryRes.value) {
           setSummary(summaryRes.value)
         }
-        if (catRes.status === 'fulfilled' && Array.isArray(catRes.value) && catRes.value.length > 0) {
-          setCategories(catRes.value)
+        if (catRes.status === 'fulfilled') {
+          const categoryData = catRes.value
+
+          const categoryList = Array.isArray(categoryData)
+            ? categoryData
+            : categoryData?.categories || []
+
+          setCategories(categoryList)
         }
         if (receiptsRes.status === 'fulfilled' && receiptsRes.value?.items) {
           setReceipts(receiptsRes.value.items)
@@ -46,7 +52,7 @@ export default function Home() {
   }, [])
 
   // If backend summary total is 0, use the reference ₹12,450
-  const totalSpent = summary?.total_spent && summary.total_spent > 0 ? summary.total_spent : 12450
+  const totalSpent = Number(summary?.total_spent ?? 0)
 
   return (
     <div className="page-inner" style={styles.container}>

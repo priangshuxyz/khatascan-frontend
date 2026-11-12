@@ -41,8 +41,7 @@ const MOCK_RECEIPTS = [
 export default function RecentReceipts({ receipts = [], loading = false }) {
   const navigate = useNavigate()
 
-  const displayReceipts = receipts && receipts.length > 0 ? receipts : MOCK_RECEIPTS
-
+  const displayReceipts = Array.isArray(receipts) ? receipts : []
   return (
     <div style={styles.card}>
       {/* Header */}
