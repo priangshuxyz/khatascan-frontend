@@ -109,25 +109,6 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          {/* Quick Insights Banner */}
-          <div style={styles.insightCard}>
-            <div style={styles.insightIconCircle}>
-              <svg width="18" height="18" viewBox="0 0 24 24"
-                fill="none"
-                stroke="var(--accent-dark)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="16" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-            </div>
-            <div style={styles.insightTextGroup}>
-              <span style={styles.insightHeading}>...</span>
-              <span style={styles.insightDetail}>...</span>
-            </div>
-          </div>
 
           {/* Category Breakdown Card */}
           <div style={styles.card}>
@@ -243,42 +224,6 @@ const styles = {
     fontSize: '10.5px',
     color: 'var(--text-muted-cream)',
     fontWeight: '400',
-  },
-  insightCard: {
-    backgroundColor: 'var(--surface-cream)',
-    borderRadius: '24px',
-    padding: '14px 16px',
-    border: '1px solid var(--border-cream)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    boxShadow: 'none',
-  },
-  insightIconCircle: {
-    width: '34px',
-    height: '34px',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(0, 191, 165, 0.15)',
-    border: '1px solid var(--border-cream)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  insightTextGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  insightHeading: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: 'var(--text-on-cream)',
-  },
-  insightDetail: {
-    fontSize: '11.5px',
-    color: 'var(--text-muted-cream)',
-    marginTop: '1px',
-    lineHeight: '1.4',
   },
   card: {
     backgroundColor: 'var(--surface-cream)',
