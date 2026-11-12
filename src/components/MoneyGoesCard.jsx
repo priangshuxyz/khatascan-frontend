@@ -1,14 +1,6 @@
 import React from 'react'
 
-const CATEGORY_CONFIG = {
-  Groceries: { color: '#00BFA5', label: 'Groceries' },
-  Restaurant: { color: '#0B6B5A', label: 'Restaurant' },
-  Utilities: { color: '#5FD3BC', label: 'Utilities' },
-  Transport: { color: '#2E8B7A', label: 'Transport' },
-  Others: { color: '#9BB5A8', label: 'Others' },
-  Other: { color: '#9BB5A8', label: 'Others' },
-}
-
+import { categoryTheme } from '../constants/categories.js'
 
 function formatINR(val) {
   if (val === null || val === undefined) return '₹ 0'
@@ -31,7 +23,7 @@ function DoughnutChart({ data, total }) {
         {data.map((item, index) => {
           const pct = (item.percentage || 0) / 100
           const strokeDash = pct * circumference
-          const color = (CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG.Others).color
+          const color = categoryTheme(item.category).color
           const offset = - accumulatedPct * circumference
           accumulatedPct += pct
 
@@ -95,7 +87,7 @@ export default function MoneyGoesCard({ data, loading = false }) {
           {/* Category List */}
           <div style={styles.legendCol}>
             {categories.map((item) => {
-              const cfg = CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG.Others
+              const cfg = { color: categoryTheme(item.category).color, label: item.category }
               return (
                 <div key={item.category} style={styles.legendRow}>
                   <div style={styles.catLeft}>

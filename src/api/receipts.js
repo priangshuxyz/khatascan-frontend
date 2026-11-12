@@ -85,6 +85,7 @@ export async function uploadManyReceipts(files, onProgress) {
   files.forEach((f) => form.append('files', f))
   const { data } = await client.post('/receipts/upload-many', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 120000,
     onUploadProgress: (e) => {
       if (onProgress && e.total) onProgress(Math.round((e.loaded * 100) / e.total))
     },
@@ -102,7 +103,8 @@ export async function uploadManyReceipts(files, onProgress) {
 export async function processPages(uploadIds, { force = false } = {}) {
   const params = {}
   if (force) params.force = true
-  const { data } = await client.post('/receipts/process-pages', { upload_ids: uploadIds }, { params })
+  // Gemini can take a while on multi-page invoices, so allow up to 2 minutes.
+  const { data } = await client.post('/receipts/process-pages', { upload_ids: uploadIds }, { params, timeout: 120000 })
   return data
 }
 
@@ -111,14 +113,12 @@ export async function processPages(uploadIds, { force = false } = {}) {
  * @param {string} uploadId
  * @param {object} [options]
  * @param {boolean} [options.force=false]
- * @param {boolean} [options.privacyMode=false]
  */
-export async function processReceipt(uploadId, { force = false, privacyMode = false } = {}) {
+export async function processReceipt(uploadId, { force = false } = {}) {
   const params = {}
   if (force) params.force = true
-  if (privacyMode) params.privacy_mode = true
 
-  const { data } = await client.post(`/receipts/${uploadId}/process`, null, { params })
+  const { data } = await client.post(`/receipts/${uploadId}/process`, null, { params, timeout: 120000 })
   return data
 }
 

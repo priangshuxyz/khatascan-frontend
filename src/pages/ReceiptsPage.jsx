@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listReceipts } from '../api/receipts.js'
 import ReceiptRow from '../components/ReceiptRow.jsx'
+import { CATEGORIES as ALL_CATEGORIES } from '../constants/categories.js'
 
-const CATEGORIES = ['All', 'Groceries', 'Restaurant', 'Utilities', 'Transport', 'Others']
+const CATEGORIES = ['All', ...ALL_CATEGORIES]
 
 export default function ReceiptsPage() {
   const navigate = useNavigate()
@@ -13,40 +14,44 @@ export default function ReceiptsPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
-  // Search & Filter
+  // Search & filter: done by the server, so they cover ALL receipts, not just this page.
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedQ, setDebouncedQ] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
 
-  const fetchReceipts = useCallback(async (p) => {
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedQ(searchQuery.trim())
+      setPage(1)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [searchQuery])
+
+  const fetchReceipts = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await listReceipts({ page: p, per_page: 10, sort_by: 'created_at', order: 'desc' })
+      const data = await listReceipts({
+        page,
+        per_page: 10,
+        q: debouncedQ || undefined,
+        category: selectedCategory === 'All' ? undefined : selectedCategory,
+        sort_by: 'created_at',
+        order: 'desc',
+      })
       setReceipts(data.items || [])
       setTotalPages(data.pages || 1)
     } catch (err) {
       console.error(err)
-      setError('Could not load receipts. Make sure the backend server is running.')
+      setError('Could not load receipts. Please check your connection and try again.')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [page, debouncedQ, selectedCategory])
 
   useEffect(() => {
-    fetchReceipts(page)
-  }, [page, fetchReceipts])
-
-  const filteredReceipts = useMemo(() => {
-    return receipts.filter((r) => {
-      const matchCategory = selectedCategory === 'All' || r.category === selectedCategory
-      const matchSearch =
-        !searchQuery ||
-        (r.vendor_name && r.vendor_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (r.category && r.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (r.total && String(r.total).includes(searchQuery))
-      return matchCategory && matchSearch
-    })
-  }, [receipts, selectedCategory, searchQuery])
+    fetchReceipts()
+  }, [fetchReceipts])
 
   return (
     <div className="page-inner" style={styles.container}>
@@ -73,7 +78,7 @@ export default function ReceiptsPage() {
         </svg>
         <input
           type="text"
-          placeholder="Search by merchant, category, or amount..."
+          placeholder="Search by merchant or invoice number..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={styles.searchInput}
@@ -98,7 +103,10 @@ export default function ReceiptsPage() {
                 color: isActive ? '#04100C' : 'var(--text-muted-cream)',
                 borderColor: isActive ? 'var(--accent)' : 'var(--border-cream)',
               }}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => {
+                setSelectedCategory(cat)
+                setPage(1)
+              }}
             >
               {cat}
             </button>
@@ -110,7 +118,7 @@ export default function ReceiptsPage() {
       {error ? (
         <div style={styles.errorBox}>
           <p style={{ color: 'var(--danger)', fontSize: '14px', marginBottom: '16px' }}>{error}</p>
-          <button className="btn btn-primary" onClick={() => fetchReceipts(page)}>
+          <button className="btn btn-primary" onClick={() => fetchReceipts()}>
             Retry Connection
           </button>
         </div>
@@ -130,7 +138,7 @@ export default function ReceiptsPage() {
             </div>
           ))}
         </div>
-      ) : receipts.length === 0 ? (
+      ) : receipts.length === 0 && !debouncedQ && selectedCategory === 'All' ? (
         <div style={styles.emptyState}>
           <div style={styles.emptyIconCircle}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-dark)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -146,16 +154,17 @@ export default function ReceiptsPage() {
             Scan Your First Receipt
           </button>
         </div>
-      ) : filteredReceipts.length === 0 ? (
+      ) : receipts.length === 0 ? (
         <div style={styles.emptyFilterState}>
           <p style={{ color: 'var(--text-muted-cream)', fontSize: '13.5px' }}>
-            No receipts matching "{searchQuery}" in {selectedCategory}.
+            No receipts match your search{selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}.
           </p>
           <button
             style={styles.resetFilterBtn}
             onClick={() => {
               setSearchQuery('')
               setSelectedCategory('All')
+              setPage(1)
             }}
           >
             Clear filters
@@ -163,7 +172,7 @@ export default function ReceiptsPage() {
         </div>
       ) : (
         <div style={styles.listCard}>
-          {filteredReceipts.map((r) => (
+          {receipts.map((r) => (
             <ReceiptRow
               key={r.id}
               receipt={r}

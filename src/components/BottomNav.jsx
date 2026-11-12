@@ -1,8 +1,8 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
-const ACTIVE_COLOR = '#007AFF'    // iOS Blue
-const INACTIVE_COLOR = '#8E8E93'  // iOS Secondary Label Grey
+const ACTIVE_COLOR = '#00C4B4'    // teal
+const INACTIVE_COLOR = '#8E8E93'  // Grey
 
 function HomeIcon({ active }) {
   const color = active ? ACTIVE_COLOR : INACTIVE_COLOR

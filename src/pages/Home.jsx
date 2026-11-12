@@ -66,8 +66,7 @@ export default function Home() {
             </svg>
           </div>
           <div style={styles.headerTitles}>
-            <h1 style={styles.brandTitle}>Khatascan</h1>
-            <p style={styles.brandSubtitle}>Expense Tracker &amp; Digitizer</p>
+            <h1 style={styles.brandTitle}>Home</h1>
           </div>
         </div>
 

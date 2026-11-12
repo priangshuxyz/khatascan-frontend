@@ -1,22 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { getMonthlySummary, getCategories } from '../api/analytics.js'
-
-const CATEGORY_COLORS = {
-  Groceries: '#00BFA5',
-  Restaurant: '#0B6B5A',
-  Utilities: '#5FD3BC',
-  Transport: '#2E8B7A',
-  Others: '#9BB5A8',
-  Other: '#9BB5A8',
-}
-
-const FALLBACK_CATEGORIES = [
-  { category: 'Groceries', total: 4320, percentage: 35, count: 6 },
-  { category: 'Restaurant', total: 2240, percentage: 18, count: 4 },
-  { category: 'Utilities', total: 1870, percentage: 15, count: 2 },
-  { category: 'Transport', total: 1490, percentage: 12, count: 3 },
-  { category: 'Others', total: 2530, percentage: 20, count: 5 },
-]
+import { categoryTheme } from '../constants/categories.js'
 
 function formatINR(val) {
   if (val === undefined || val === null) return '₹ 0.00'
@@ -119,7 +103,7 @@ export default function AnalyticsPage() {
 
             <div style={styles.categoryList}>
               {categories.map((c) => {
-                const color = CATEGORY_COLORS[c.category] || CATEGORY_COLORS.Others
+                const color = categoryTheme(c.category).color
                 const pct = Math.round(c.percentage || 0)
 
                 return (

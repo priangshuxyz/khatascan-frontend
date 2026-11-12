@@ -100,15 +100,8 @@ export default function SettingsPage() {
           </div>
 
           <div style={styles.infoRow}>
-            <span style={styles.infoKey}>Backend API</span>
-            <span style={styles.apiValue} title={backendUrl}>
-              {backendUrl}
-            </span>
-          </div>
-
-          <div style={styles.infoRow}>
             <span style={styles.infoKey}>OCR Intelligence</span>
-            <span style={styles.infoValue}>Google Gemini Flash / RapidOCR</span>
+            <span style={styles.infoValue}>Google Gemini Flash</span>
           </div>
 
           <div style={{ ...styles.infoRow, borderBottom: 'none' }}>
