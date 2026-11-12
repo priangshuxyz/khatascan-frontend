@@ -6,9 +6,14 @@ import client, { AUTH_ENDPOINTS } from './client.js'
  * @returns {{ token: string, user: object }}
  */
 export async function apiSignup({ name, password }) {
-  const res = await client.post(AUTH_ENDPOINTS.signup, { name, password })
-  return res.data
+  const { data } = await client.post(AUTH_ENDPOINTS.signup, {
+    username: name,
+    password,
+  })
+
+  return data
 }
+
 
 /**
  * Sign in an existing user.
@@ -16,8 +21,21 @@ export async function apiSignup({ name, password }) {
  * @returns {{ token: string, user: object }}
  */
 export async function apiLogin({ name, password }) {
-  const res = await client.post(AUTH_ENDPOINTS.login, { name, password })
-  return res.data
+  const form = new URLSearchParams()
+  form.append('username', name)
+  form.append('password', password)
+
+  const { data } = await client.post(
+    AUTH_ENDPOINTS.login,
+    form,
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }
+  )
+
+  return data
 }
 
 /**
@@ -25,7 +43,7 @@ export async function apiLogin({ name, password }) {
  * @returns {{ user: object } | object}
  */
 export async function apiGetMe() {
-  const res = await client.get(AUTH_ENDPOINTS.me)
-  return res.data
+  const { data } = await client.get(AUTH_ENDPOINTS.me)
+  return data
 }
 

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 
 // ── Validation helpers ───────────────────────────────────────────────────────
-const NAME_RE = /^[a-zA-Z0-9 _]{3,30}$/
+const NAME_RE = /^[a-zA-Z0-9_.-]{3,30}$/
 
 function validateName(v) {
   const t = v.trim()
@@ -16,7 +16,7 @@ function validateName(v) {
 
 function validatePassword(v) {
   if (!v) return 'Password is required.'
-  if (v.length < 4) return 'Password must be at least 4 characters.'
+  if (v.length < 8) return 'Password must be at least 8 characters.'
   return ''
 }
 
@@ -43,19 +43,19 @@ function EyeIcon({ visible }) {
 }
 
 export default function SignUpPage() {
-  const { signup }              = useAuth()
-  const navigate                = useNavigate()
-  const [name, setName]         = useState('')
+  const { signup } = useAuth()
+  const navigate = useNavigate()
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
-  const [confirm, setConfirm]   = useState('')
-  const [showPwd, setShowPwd]   = useState(false)
-  const [showCfm, setShowCfm]   = useState(false)
-  const [nameErr, setNameErr]   = useState('')
-  const [pwdErr, setPwdErr]     = useState('')
-  const [cfmErr, setCfmErr]     = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [showPwd, setShowPwd] = useState(false)
+  const [showCfm, setShowCfm] = useState(false)
+  const [nameErr, setNameErr] = useState('')
+  const [pwdErr, setPwdErr] = useState('')
+  const [cfmErr, setCfmErr] = useState('')
   const [serverErr, setServerErr] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const submitLock              = useRef(false)
+  const submitLock = useRef(false)
 
   function handleSubmit(e) {
     e.preventDefault()

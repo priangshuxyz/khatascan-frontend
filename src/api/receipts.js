@@ -56,14 +56,22 @@ export async function getReceipt(id) {
  */
 export async function uploadReceipt(file, onProgress) {
   const form = new FormData()
-  form.append('file', file)
-  const { data } = await client.post('/receipts/upload', form, {
+  form.append('files', file)
+
+  const { data } = await client.post('/receipts/upload-many', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: (e) => {
-      if (onProgress && e.total) onProgress(Math.round((e.loaded * 100) / e.total))
+      if (onProgress && e.total) {
+        onProgress(Math.round((e.loaded * 100) / e.total))
+      }
     },
   })
-  return data
+
+  if (!data.uploads?.length) {
+    throw new Error('Receipt upload failed.')
+  }
+
+  return data.uploads[0]
 }
 
 /**

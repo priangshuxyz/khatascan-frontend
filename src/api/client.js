@@ -5,9 +5,9 @@ const API_BASE = rawBase.replace(/\/+$/, '')
 
 // ── Auth endpoint paths — change here if the backend routes differ ──────────
 export const AUTH_ENDPOINTS = {
-  signup: '/auth/signup',
-  login:  '/auth/login',
-  me:     '/auth/me',
+  signup: '/auth/register',
+  login: '/auth/login',
+  me: '/auth/me',
 }
 
 export const TOKEN_KEY = 'khatascan_token'

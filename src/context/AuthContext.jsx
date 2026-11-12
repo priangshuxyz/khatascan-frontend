@@ -32,8 +32,8 @@ export function getInitials(name = '') {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null)
-  const [token, setToken]     = useState(() => localStorage.getItem(TOKEN_KEY))
+  const [user, setUser] = useState(null)
+  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY))
   const [loading, setLoading] = useState(true)   // true while /auth/me check is in flight
 
   // ── Bootstrap: check token validity on app load ─────────────────────────
@@ -82,29 +82,31 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (name, password) => {
     const trimmedName = (name || '').trim()
 
-    // 1. Check frontend default credentials (no backend required)
-    if (isDefaultCredential(trimmedName, password)) {
-      const mockUser = {
-        id: 'default-user-id',
-        name: trimmedName,
-        username: trimmedName,
-      }
-      const mockToken = `mock_token_${Date.now()}`
-      localStorage.setItem(TOKEN_KEY, mockToken)
-      localStorage.setItem(USER_KEY, JSON.stringify(mockUser))
-      setToken(mockToken)
-      setUser(mockUser)
-      return { token: mockToken, user: mockUser }
+    // Authenticate through the backend
+    const data = await apiLogin({
+      name: trimmedName,
+      password,
+    })
+
+    const resolvedToken = data?.access_token ?? data?.token
+
+    if (!resolvedToken) {
+      throw new Error('Backend did not return an access token.')
     }
 
-    // 2. Otherwise authenticate with backend
-    const data = await apiLogin({ name: trimmedName, password })
     const resolvedUser = data?.user ?? data
-    const resolvedToken = data?.token ?? data?.access_token
+
+    const userWithName = {
+      ...resolvedUser,
+      name: resolvedUser.name ?? resolvedUser.username ?? trimmedName,
+    }
+
     localStorage.setItem(TOKEN_KEY, resolvedToken)
-    localStorage.setItem(USER_KEY, JSON.stringify(resolvedUser))
+    localStorage.setItem(USER_KEY, JSON.stringify(userWithName))
+
     setToken(resolvedToken)
-    setUser(resolvedUser)
+    setUser(userWithName)
+
     return data
   }, [])
 
