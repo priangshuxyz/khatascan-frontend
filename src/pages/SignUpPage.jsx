@@ -16,7 +16,7 @@ function validateName(v) {
 
 function validatePassword(v) {
   if (!v) return 'Password is required.'
-  if (v.length < 6) return 'Password must be at least 6 characters.'
+  if (v.length < 4) return 'Password must be at least 4 characters.'
   return ''
 }
 

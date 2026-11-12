@@ -1,8 +1,24 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { apiLogin, apiSignup, apiGetMe } from '../api/auth.js'
-import { TOKEN_KEY } from '../api/client.js'
+import { TOKEN_KEY, USER_KEY } from '../api/client.js'
 
 const AuthContext = createContext(null)
+
+export const DEFAULT_CREDENTIALS = {
+  usernames: ['admin', '1234', 'user', 'demo'],
+  password: '1234',
+}
+
+/**
+ * Checks if the given username and password match the default frontend-only credentials.
+ */
+export function isDefaultCredential(name, password) {
+  const trimmed = (name || '').trim().toLowerCase()
+  return (
+    password === DEFAULT_CREDENTIALS.password &&
+    (DEFAULT_CREDENTIALS.usernames.includes(trimmed) || trimmed === '1234')
+  )
+}
 
 /**
  * Returns initials (up to 2 chars) from a display name string.
@@ -27,15 +43,35 @@ export function AuthProvider({ children }) {
       setLoading(false)
       return
     }
+
+    // Default frontend mock token session
+    if (storedToken.startsWith('mock_token_')) {
+      const storedUser = localStorage.getItem(USER_KEY)
+      let resolvedUser = { id: 'default-user', name: 'admin', username: 'admin' }
+      if (storedUser) {
+        try {
+          resolvedUser = JSON.parse(storedUser)
+        } catch {
+          // ignore parsing error, use fallback
+        }
+      }
+      setUser(resolvedUser)
+      setToken(storedToken)
+      setLoading(false)
+      return
+    }
+
     apiGetMe()
       .then((data) => {
         // Backend may return { user } or the user object directly
         const resolvedUser = data?.user ?? data
         setUser(resolvedUser)
         setToken(storedToken)
+        localStorage.setItem(USER_KEY, JSON.stringify(resolvedUser))
       })
       .catch(() => {
         localStorage.removeItem(TOKEN_KEY)
+        localStorage.removeItem(USER_KEY)
         setToken(null)
         setUser(null)
       })
@@ -44,10 +80,29 @@ export function AuthProvider({ children }) {
 
   // ── login ────────────────────────────────────────────────────────────────
   const login = useCallback(async (name, password) => {
-    const data = await apiLogin({ name, password })
+    const trimmedName = (name || '').trim()
+
+    // 1. Check frontend default credentials (no backend required)
+    if (isDefaultCredential(trimmedName, password)) {
+      const mockUser = {
+        id: 'default-user-id',
+        name: trimmedName,
+        username: trimmedName,
+      }
+      const mockToken = `mock_token_${Date.now()}`
+      localStorage.setItem(TOKEN_KEY, mockToken)
+      localStorage.setItem(USER_KEY, JSON.stringify(mockUser))
+      setToken(mockToken)
+      setUser(mockUser)
+      return { token: mockToken, user: mockUser }
+    }
+
+    // 2. Otherwise authenticate with backend
+    const data = await apiLogin({ name: trimmedName, password })
     const resolvedUser = data?.user ?? data
     const resolvedToken = data?.token ?? data?.access_token
     localStorage.setItem(TOKEN_KEY, resolvedToken)
+    localStorage.setItem(USER_KEY, JSON.stringify(resolvedUser))
     setToken(resolvedToken)
     setUser(resolvedUser)
     return data
@@ -59,6 +114,7 @@ export function AuthProvider({ children }) {
     const resolvedUser = data?.user ?? data
     const resolvedToken = data?.token ?? data?.access_token
     localStorage.setItem(TOKEN_KEY, resolvedToken)
+    localStorage.setItem(USER_KEY, JSON.stringify(resolvedUser))
     setToken(resolvedToken)
     setUser(resolvedUser)
     return data
@@ -67,6 +123,7 @@ export function AuthProvider({ children }) {
   // ── logout ───────────────────────────────────────────────────────────────
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
     setToken(null)
     setUser(null)
   }, [])

@@ -11,6 +11,7 @@ export const AUTH_ENDPOINTS = {
 }
 
 export const TOKEN_KEY = 'khatascan_token'
+export const USER_KEY = 'khatascan_user'
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -33,7 +34,13 @@ client.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
+      const token = localStorage.getItem(TOKEN_KEY)
+      // If logged in via frontend default credentials, avoid forced logout on backend 401s
+      if (token && token.startsWith('mock_token_')) {
+        return Promise.reject(err)
+      }
       localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(USER_KEY)
       // Avoid redirect loop on the auth pages themselves
       if (!window.location.pathname.startsWith('/signin') && !window.location.pathname.startsWith('/signup')) {
         window.location.href = '/signin'
