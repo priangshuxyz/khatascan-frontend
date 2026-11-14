@@ -1,8 +1,8 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
-const ACTIVE_COLOR = '#00C4B4'    // teal
-const INACTIVE_COLOR = '#8E8E93'  // Grey
+const ACTIVE_COLOR = 'var(--accent-dark)'    // deep teal, same as badges and links
+const INACTIVE_COLOR = '#8E8E93'  // grey
 
 function HomeIcon({ active }) {
   const color = active ? ACTIVE_COLOR : INACTIVE_COLOR
@@ -28,7 +28,7 @@ function ReceiptsIcon({ active }) {
 
 function ScanCameraIcon() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#04100C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
       <circle cx="12" cy="13" r="4" />
     </svg>
@@ -118,10 +118,10 @@ export default function BottomNav() {
         transform: 'translateX(-50%)',
         width: '100%',
         maxWidth: '393px',
-        backgroundColor: 'rgba(249,249,249,0.94)',
+        backgroundColor: 'rgba(228, 228, 195, 0.94)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '0.5px solid rgba(0,0,0,0.15)',
+        borderTop: '1px solid var(--border-cream)',
         zIndex: 100,
         boxSizing: 'border-box',
       }}
@@ -167,11 +167,11 @@ export default function BottomNav() {
                     width: '56px',
                     height: '56px',
                     borderRadius: '50%',
-                    backgroundColor: scanTab.isActive ? '#005EC4' : '#007AFF',
+                    backgroundColor: scanTab.isActive ? 'var(--accent-strong)' : 'var(--accent)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 4px 16px rgba(0, 122, 255, 0.45)',
+                    boxShadow: '0 4px 16px rgba(0, 191, 165, 0.45)',
                     marginBottom: '2px',
                     marginTop: '-14px',
                     flexShrink: 0,

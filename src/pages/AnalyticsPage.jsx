@@ -14,41 +14,80 @@ function formatINR(val) {
 }
 
 export default function AnalyticsPage() {
+  const now = new Date()
+  const thisMonth = now.getMonth() + 1
+  const thisYear = now.getFullYear()
+
+  // The month being viewed (starts on the current one)
+  const [month, setMonth] = useState(thisMonth)
+  const [year, setYear] = useState(thisYear)
+
   const [summary, setSummary] = useState(null)
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
-  const today = new Date()
-  const currentMonthName = today.toLocaleString('en-US', { month: 'short', year: 'numeric' })
-  const daysPassed = today.getDate() || 1
+  const monthLabel = new Date(year, month - 1, 1).toLocaleString('en-US', { month: 'short', year: 'numeric' })
+  const isCurrentMonth = month === thisMonth && year === thisYear
+  const atLatest = year > thisYear || (year === thisYear && month >= thisMonth)
+  const atEarliest = year <= 2020 && month <= 1 // the server only keeps stats from 2020
+
+  // Days to divide by for "per day": the days so far this month, or the whole month for past ones
+  const daysCounted = isCurrentMonth ? now.getDate() || 1 : new Date(year, month, 0).getDate()
+
+  const years = Array.from({ length: thisYear - 2019 }, (_, i) => thisYear - i)
+  const monthNames = Array.from({ length: 12 }, (_, i) =>
+    new Date(2000, i, 1).toLocaleString('en-US', { month: 'long' })
+  )
+
+  function shiftMonth(delta) {
+    let m = month + delta
+    let y = year
+    if (m < 1) { m = 12; y -= 1 }
+    if (m > 12) { m = 1; y += 1 }
+    setMonth(m)
+    setYear(y)
+  }
+
+  function chooseYear(y) {
+    setYear(y)
+    if (y === thisYear && month > thisMonth) setMonth(thisMonth) // no future months
+  }
 
   useEffect(() => {
-    const month = today.getMonth() + 1
-    const year = today.getFullYear()
+    let cancelled = false // ignore a slow answer if the user already moved to another month
+    setLoading(true)
+    setError(null)
 
-    Promise.allSettled([
-      getMonthlySummary(month, year),
-      getCategories(month, year),
-    ])
-      .then(([sumRes, catRes]) => {
-        if (sumRes.status === 'fulfilled' && sumRes.value) {
-          setSummary(sumRes.value)
-        }
-        if (catRes.status === 'fulfilled' && Array.isArray(catRes.value) && catRes.value.length > 0) {
-          setCategories(catRes.value)
-        } else {
+    Promise.allSettled([getMonthlySummary(month, year), getCategories(month, year)]).then(
+      ([sumRes, catRes]) => {
+        if (cancelled) return
+        if (sumRes.status === 'rejected' && catRes.status === 'rejected') {
+          setError('Could not load analytics. Please check your connection and try again.')
+          setSummary(null)
           setCategories([])
+        } else {
+          setSummary(sumRes.status === 'fulfilled' ? sumRes.value : null)
+          setCategories(
+            catRes.status === 'fulfilled' && Array.isArray(catRes.value) ? catRes.value : []
+          )
         }
-      })
-      .finally(() => setLoading(false))
-  }, [])
+        setLoading(false)
+      }
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [month, year, reloadKey])
 
   const totalSpent = Number(summary?.total_spent ?? 0)
   const receiptCount = Number(summary?.receipt_count ?? 0)
   const avgPerReceipt = Number(
     summary?.avg_per_receipt ?? (receiptCount ? totalSpent / receiptCount : 0)
   )
-  const dailyAverage = Math.round(totalSpent / daysPassed)
+  const previousTotal = Number(summary?.previous_month_total ?? 0)
+  const dailyAverage = Math.round(totalSpent / daysCounted)
 
   // Find top category
   const topCategory = categories.length > 0
@@ -63,8 +102,42 @@ export default function AnalyticsPage() {
           <h2 style={styles.title}>Spending Analytics</h2>
           <p style={styles.subtitle}>Financial insights &amp; category breakdown</p>
         </div>
-        <span style={styles.monthBadge}>{currentMonthName}</span>
+        <span style={styles.monthBadge}>{monthLabel}</span>
       </div>
+
+      {/* Month picker: arrows step one month, the dropdowns jump anywhere */}
+      <div style={styles.picker}>
+        <button style={{ ...styles.arrowBtn, opacity: atEarliest ? 0.35 : 1 }} onClick={() => shiftMonth(-1)} disabled={atEarliest} aria-label="Previous month">
+          ‹
+        </button>
+        <select className="form-input" style={styles.select} value={month} onChange={(e) => setMonth(Number(e.target.value))} aria-label="Month">
+          {monthNames.map((name, i) => (
+            <option key={name} value={i + 1} disabled={year === thisYear && i + 1 > thisMonth}>
+              {name}
+            </option>
+          ))}
+        </select>
+        <select className="form-input" style={{ ...styles.select, flex: '0 0 92px' }} value={year} onChange={(e) => chooseYear(Number(e.target.value))} aria-label="Year">
+          {years.map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+        <button style={{ ...styles.arrowBtn, opacity: atLatest ? 0.35 : 1 }} onClick={() => shiftMonth(1)} disabled={atLatest} aria-label="Next month">
+          ›
+        </button>
+      </div>
+      {!isCurrentMonth && (
+        <button style={styles.todayBtn} onClick={() => { setMonth(thisMonth); setYear(thisYear) }}>
+          Back to this month
+        </button>
+      )}
+
+      {error && (
+        <div style={styles.errorBox}>
+          {error}{' '}
+          <button style={styles.retryBtn} onClick={() => setReloadKey((k) => k + 1)}>Retry</button>
+        </div>
+      )}
 
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
@@ -77,7 +150,7 @@ export default function AnalyticsPage() {
             <div style={styles.statCard}>
               <span style={styles.statLabel}>TOTAL SPENT</span>
               <h3 style={styles.statValue} className="tabular-nums">{formatINR(totalSpent)}</h3>
-              <span style={styles.statSub}>Full month tracking</span>
+              <span style={styles.statSub}>{previousTotal > 0 ? `Last month ${formatINR(previousTotal)}` : isCurrentMonth ? 'This month so far' : 'Whole month'}</span>
             </div>
 
             <div style={styles.statCard}>
@@ -101,6 +174,9 @@ export default function AnalyticsPage() {
               <span style={styles.categoryCountBadge}>{categories.length} Categories</span>
             </div>
 
+            {categories.length === 0 && (
+              <p style={styles.emptyText}>No spending recorded for {monthLabel}.</p>
+            )}
             <div style={styles.categoryList}>
               {categories.map((c) => {
                 const color = categoryTheme(c.category).color
@@ -141,6 +217,23 @@ export default function AnalyticsPage() {
 }
 
 const styles = {
+  picker: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' },
+  arrowBtn: {
+    width: '40px', height: '40px', flex: '0 0 40px', borderRadius: '9999px',
+    border: '1px solid var(--border-cream)', backgroundColor: 'var(--surface-cream)',
+    color: 'var(--text-on-cream)', fontSize: '22px', lineHeight: 1, cursor: 'pointer',
+  },
+  select: { flex: 1, minWidth: 0, height: '40px', padding: '0 14px' },
+  todayBtn: {
+    background: 'none', border: 'none', color: 'var(--accent-dark)', fontWeight: '600',
+    fontSize: '12.5px', cursor: 'pointer', padding: '0 0 12px 4px',
+  },
+  errorBox: {
+    backgroundColor: 'rgba(229,115,106,0.14)', border: '1px solid rgba(229,115,106,0.4)',
+    borderRadius: '14px', padding: '10px 14px', marginBottom: '14px', fontSize: '13px', color: '#9C2F26',
+  },
+  retryBtn: { background: 'none', border: 'none', color: 'var(--accent-dark)', fontWeight: '700', cursor: 'pointer', padding: 0 },
+  emptyText: { fontSize: '13px', color: 'var(--text-muted-cream)', padding: '4px 0 8px' },
   container: {
     width: '100%',
     boxSizing: 'border-box',

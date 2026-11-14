@@ -13,7 +13,6 @@ export default function ReceiptDetailPage() {
   const [error, setError] = useState(null)
   const [actionError, setActionError] = useState(null)
   const [busy, setBusy] = useState(false)
-  const [showRawOcr, setShowRawOcr] = useState(false)
 
   useEffect(() => {
     getReceipt(id)
@@ -182,16 +181,6 @@ export default function ReceiptDetailPage() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {receipt.raw_ocr_text && (
-            <div style={styles.card}>
-              <div style={styles.collapsibleHeader} onClick={() => setShowRawOcr(!showRawOcr)} role="button" tabIndex={0}>
-                <h4 style={{ ...styles.sectionHeading, marginBottom: 0 }}>Text read from the receipt</h4>
-                <span style={styles.toggleLink}>{showRawOcr ? 'Hide' : 'View'}</span>
-              </div>
-              {showRawOcr && <pre style={styles.rawText}>{receipt.raw_ocr_text}</pre>}
             </div>
           )}
 
@@ -413,31 +402,6 @@ const styles = {
     width: '100%',
     maxHeight: '300px',
     objectFit: 'contain',
-  },
-  collapsibleHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    cursor: 'pointer',
-  },
-  toggleLink: {
-    fontSize: '12.5px',
-    color: 'var(--accent-dark)',
-    fontWeight: '600',
-  },
-  rawText: {
-    marginTop: '12px',
-    backgroundColor: 'var(--bg-cream)',
-    borderRadius: '16px',
-    padding: '12px',
-    fontSize: '11.5px',
-    color: 'var(--text-on-cream)',
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'break-all',
-    fontFamily: 'monospace',
-    maxHeight: '180px',
-    overflowY: 'auto',
-    border: '1px solid var(--border-cream)',
   },
   errorBox: {
     backgroundColor: 'var(--surface-cream)',
